@@ -1,0 +1,92 @@
+name: Frame
+options:
+  bundleIdPrefix: com.cauecarneiro
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Assinar com um certificado de verdade (e não ad-hoc, "-") é o que faz as
+    # permissões do sistema sobreviverem a um rebuild. Com ad-hoc, o requisito
+    # designado é `cdhash H"..."` — o hash do binário —, então toda recompilação
+    # produz uma identidade nova e o TCC descarta a autorização de Gravação de
+    # Tela e Acessibilidade que o usuário acabou de conceder.
+    DEVELOPMENT_TEAM: L7TP4K6F78
+    CODE_SIGN_STYLE: Manual
+    # Hash SHA-1 de "Apple Development: Cauê Carneiro (L7TP4K6F78)". Usamos o
+    # hash porque, em modo manual, o Xcode traduz o nome genérico "Apple
+    # Development" para "Mac Development", que não existe neste chaveiro.
+    CODE_SIGN_IDENTITY: F1F4C17DF65BABD8AEF16F60EE676BBA7741891A
+    PROVISIONING_PROFILE_SPECIFIER: ""
+    ENABLE_HARDENED_RUNTIME: YES
+    DEAD_CODE_STRIPPING: YES
+    CLANG_ENABLE_MODULES: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+targets:
+  Frame:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Resources
+        buildPhase: resources
+        # Info.plist e entitlements são referenciados por build setting; se
+        # também entrarem em Copy Bundle Resources, o Xcode avisa e o bundle
+        # ganha cópias inúteis.
+        excludes:
+          - Info.plist
+          - Frame.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cauecarneiro.frame
+        PRODUCT_NAME: Frame
+        INFOPLIST_FILE: Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/Frame.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: YES
+        COMBINE_HIDPI_IMAGES: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+    dependencies:
+      - sdk: ScreenCaptureKit.framework
+      - sdk: Vision.framework
+      - sdk: AVFoundation.framework
+      - sdk: CoreImage.framework
+      - sdk: Accelerate.framework
+      - sdk: Carbon.framework
+      - sdk: Metal.framework
+      - sdk: MetalKit.framework
+      - sdk: UniformTypeIdentifiers.framework
+      - sdk: ServiceManagement.framework
+      - sdk: Translation.framework
+      - sdk: FoundationModels.framework
+
+  FrameTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests
+    dependencies:
+      - target: Frame
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cauecarneiro.frame.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Frame:
+    build:
+      targets:
+        Frame: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - FrameTests
